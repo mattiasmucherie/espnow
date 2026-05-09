@@ -162,7 +162,13 @@ void handlePacket() {
   packetReady = false;
 
   if (err) {
-    Serial.printf("JSON parse failed: %s\n", err.c_str());
+    Serial.printf("JSON parse failed: %s (len=%u)\n",
+                  err.c_str(), (unsigned)packetLen);
+    Serial.print("  hex: ");
+    for (size_t i = 0; i < packetLen && i < 80; i++) Serial.printf("%02x ", packetBuf[i]);
+    Serial.println();
+    Serial.print("  str: ");
+    Serial.println((const char*)packetBuf);
     return;
   }
 
