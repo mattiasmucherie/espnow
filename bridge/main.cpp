@@ -40,6 +40,9 @@ void onEspNowReceive(const esp_now_recv_info_t* info, const uint8_t* data, int l
 void connectWifi() {
   Serial.print("Connecting to WiFi");
   WiFi.mode(WIFI_STA);
+  // Must add LR to the mask BEFORE associating; setting it after breaks the AP link.
+  esp_wifi_set_protocol(WIFI_IF_STA,
+    WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N | WIFI_PROTOCOL_LR);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -221,8 +224,6 @@ void setup() {
   Serial.println("\nESP-NOW MQTT Bridge starting...");
   connectWifi();
   WiFi.setSleep(false);
-  esp_wifi_set_protocol(WIFI_IF_STA,
-    WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N | WIFI_PROTOCOL_LR);
   connectMqtt();
   setupEspNow();
 }
