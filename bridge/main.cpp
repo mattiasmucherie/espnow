@@ -222,7 +222,7 @@ void setup() {
   connectWifi();
   WiFi.setSleep(false);
   esp_wifi_set_protocol(WIFI_IF_STA,
-    WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N);
+    WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N | WIFI_PROTOCOL_LR);
   connectMqtt();
   setupEspNow();
 }

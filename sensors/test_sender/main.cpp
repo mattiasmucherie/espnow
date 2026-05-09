@@ -28,8 +28,7 @@ void setup() {
   WiFi.disconnect();
   delay(100);
 
-  esp_wifi_set_protocol(WIFI_IF_STA,
-    WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N);
+  esp_wifi_set_protocol(WIFI_IF_STA, WIFI_PROTOCOL_LR);
 
   Serial.print("Sender MAC: ");
   Serial.println(WiFi.macAddress());
@@ -53,11 +52,6 @@ void setup() {
     Serial.println("Failed to add peer!");
     return;
   }
-
-  esp_now_rate_config_t rate = {};
-  rate.phymode = WIFI_PHY_MODE_11B;
-  rate.rate    = WIFI_PHY_RATE_1M_L;
-  esp_now_set_peer_rate_config(bridgeMac, &rate);
 
   uint8_t primary;
   wifi_second_chan_t secondary;

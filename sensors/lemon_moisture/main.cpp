@@ -71,8 +71,7 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   delay(50);
-  esp_wifi_set_protocol(WIFI_IF_STA,
-    WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N);
+  esp_wifi_set_protocol(WIFI_IF_STA, WIFI_PROTOCOL_LR);
 
   if (esp_now_init() != ESP_OK) {
     Serial.println("ESP-NOW init failed");
@@ -91,14 +90,6 @@ void setup() {
   if (esp_now_add_peer(&peer) != ESP_OK) {
     Serial.println("Failed to add peer");
     sleepNow();
-  }
-
-  // Lock peer to 1Mbps DSSS — slowest WiFi rate, ~5–10dB better range.
-  esp_now_rate_config_t rate = {};
-  rate.phymode = WIFI_PHY_MODE_11B;
-  rate.rate    = WIFI_PHY_RATE_1M_L;
-  if (esp_now_set_peer_rate_config(bridgeMac, &rate) != ESP_OK) {
-    Serial.println("Rate config failed (continuing at default rate)");
   }
 
   JsonDocument doc;
