@@ -6,3 +6,5 @@
 
 # Real secrets — never commit
 shared/secrets.h
+
+get-platformio.py
