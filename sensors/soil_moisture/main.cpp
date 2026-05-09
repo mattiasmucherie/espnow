@@ -97,9 +97,10 @@ void setup() {
   doc["id"]    = SENSOR_ID;
   doc["name"]  = SENSOR_NAME;
   doc["model"] = SENSOR_MODEL;
-  doc["v"]["moisture"]      = pct;
-  doc["m"]["moisture"]["u"] = "%";
-  doc["m"]["moisture"]["i"] = "mdi:water-percent";
+  doc["v"]["moisture"]       = pct;
+  doc["m"]["moisture"]["u"]  = "%";
+  doc["m"]["moisture"]["i"]  = "mdi:water-percent";
+  doc["m"]["moisture"]["dc"] = "humidity";
 
   uint8_t buf[ESPNOW_MAX_JSON];
   size_t n = serializeJson(doc, buf, sizeof(buf));
