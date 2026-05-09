@@ -54,6 +54,11 @@ void setup() {
     return;
   }
 
+  esp_now_rate_config_t rate = {};
+  rate.phymode = WIFI_PHY_MODE_11B;
+  rate.rate    = WIFI_PHY_RATE_1M_L;
+  esp_now_set_peer_rate_config(bridgeMac, &rate);
+
   uint8_t primary;
   wifi_second_chan_t secondary;
   esp_wifi_get_channel(&primary, &secondary);

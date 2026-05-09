@@ -93,6 +93,14 @@ void setup() {
     sleepNow();
   }
 
+  // Lock peer to 1Mbps DSSS — slowest WiFi rate, ~5–10dB better range.
+  esp_now_rate_config_t rate = {};
+  rate.phymode = WIFI_PHY_MODE_11B;
+  rate.rate    = WIFI_PHY_RATE_1M_L;
+  if (esp_now_set_peer_rate_config(bridgeMac, &rate) != ESP_OK) {
+    Serial.println("Rate config failed (continuing at default rate)");
+  }
+
   JsonDocument doc;
   doc["id"]    = SENSOR_ID;
   doc["name"]  = SENSOR_NAME;
@@ -105,14 +113,25 @@ void setup() {
   uint8_t buf[ESPNOW_MAX_JSON];
   size_t n = serializeJson(doc, buf, sizeof(buf));
 
-  esp_err_t r = esp_now_send(bridgeMac, buf, n);
-  Serial.printf("Sent (%u bytes) moisture=%d%% -> %s\n",
-                (unsigned)n, pct, r == ESP_OK ? "queued" : "ERROR");
-
-  unsigned long t0 = millis();
-  while (!sentDone && millis() - t0 < SEND_TIMEOUT_MS) delay(5);
-  Serial.printf("TX %s\n",
-                sentStatus == ESP_NOW_SEND_SUCCESS ? "OK" : "FAIL");
+  const int MAX_ATTEMPTS = 3;
+  bool delivered = false;
+  for (int i = 1; i <= MAX_ATTEMPTS && !delivered; i++) {
+    sentDone = false;
+    sentStatus = ESP_NOW_SEND_FAIL;
+    esp_err_t r = esp_now_send(bridgeMac, buf, n);
+    Serial.printf("attempt %d (%u bytes) moisture=%d%% -> %s\n",
+                  i, (unsigned)n, pct, r == ESP_OK ? "queued" : "ERROR");
+    if (r == ESP_OK) {
+      unsigned long t0 = millis();
+      while (!sentDone && millis() - t0 < SEND_TIMEOUT_MS) delay(5);
+      if (sentDone && sentStatus == ESP_NOW_SEND_SUCCESS) {
+        delivered = true;
+        break;
+      }
+    }
+    delay(50);
+  }
+  Serial.printf("Final: %s\n", delivered ? "OK" : "FAILED");
 
   sleepNow();
 }
