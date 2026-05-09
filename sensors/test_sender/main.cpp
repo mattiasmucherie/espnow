@@ -2,10 +2,15 @@
 #include <WiFi.h>
 #include <esp_now.h>
 #include <esp_wifi.h>
+#include <ArduinoJson.h>
 #include "secrets.h"
 #include "espnow_packet.h"
 
 uint8_t bridgeMac[] = BRIDGE_MAC;
+
+const char* SENSOR_ID    = "test_sensor";
+const char* SENSOR_NAME  = "Test Sensor";
+const char* SENSOR_MODEL = "ESP32-C3 ESP-NOW Sensor";
 
 uint32_t counter = 0;
 
@@ -59,14 +64,22 @@ void setup() {
 }
 
 void loop() {
-  test_payload_t pkt;
-  pkt.counter = ++counter;
+  counter++;
 
-  esp_err_t result = esp_now_send(bridgeMac, (uint8_t*)&pkt, sizeof(pkt));
-  Serial.print("Sending counter=");
-  Serial.print(counter);
-  Serial.print(" → ");
-  Serial.println(result == ESP_OK ? "queued" : "ERROR");
+  JsonDocument doc;
+  doc["id"]    = SENSOR_ID;
+  doc["name"]  = SENSOR_NAME;
+  doc["model"] = SENSOR_MODEL;
+  doc["v"]["counter"]      = counter;
+  doc["m"]["counter"]["i"] = "mdi:counter";
+
+  uint8_t buf[ESPNOW_MAX_JSON];
+  size_t n = serializeJson(doc, buf, sizeof(buf));
+
+  esp_err_t result = esp_now_send(bridgeMac, buf, n);
+  Serial.printf("Sent (%u bytes) counter=%lu -> %s\n",
+                (unsigned)n, (unsigned long)counter,
+                result == ESP_OK ? "queued" : "ERROR");
 
   delay(3000);
 }

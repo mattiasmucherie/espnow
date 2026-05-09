@@ -34,8 +34,11 @@ pio device monitor -e bridge
 
 ## Adding a sensor
 
+Bridge does NOT need to be touched or reflashed. Sensors self-describe; bridge auto-publishes HA discovery on first sight.
+
 1. `mkdir sensors/<name> && cp sensors/test_sender/main.cpp sensors/<name>/main.cpp`
-2. Add to `platformio.ini`:
+2. Edit the new `main.cpp`: change `SENSOR_ID`, `SENSOR_NAME`, `SENSOR_MODEL`, and the `v`/`m` fields in `loop()`.
+3. Add to `platformio.ini`:
    ```ini
    [env:<name>]
    board = esp32-c3-devkitm-1
@@ -44,4 +47,19 @@ pio device monitor -e bridge
        ${env.build_flags}
        -DARDUINO_USB_MODE=1
        -DARDUINO_USB_CDC_ON_BOOT=1
+   lib_deps =
+       bblanchon/ArduinoJson@^7
    ```
+4. Flash. New device + entities show up in HA.
+
+## Wire format
+
+ESP-NOW payload is JSON. Contract documented in `shared/espnow_packet.h`.
+```json
+{"id":"<slug>","name":"<Display>","model":"<Model>",
+ "v":{"<metric>":<number>},
+ "m":{"<metric>":{"u":"<unit>","i":"mdi:<icon>","dc":"<device_class>"}}}
+```
+- `id`, `v` required. `name`, `model`, `m` optional.
+- Bridge publishes values to `espnow/<id>/<metric>`.
+- HA discovery is republished on first sight per bridge boot — retained MQTT makes it idempotent.
