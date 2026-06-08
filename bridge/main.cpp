@@ -29,6 +29,12 @@ std::set<std::string> seenDevices;
 std::set<std::string> seenMetrics;  // key = "id|metric"
 
 void onEspNowReceive(const esp_now_recv_info_t* info, const uint8_t* data, int len) {
+  // DEBUG: log every frame that the radio actually demodulates, before any
+  // drop/parse logic — proves whether frames are reaching us at all + RSSI.
+  const uint8_t* m = info->src_addr;
+  Serial.printf("RX %02X:%02X:%02X:%02X:%02X:%02X len=%d rssi=%d\n",
+                m[0], m[1], m[2], m[3], m[4], m[5], len, info->rx_ctrl->rssi);
+
   if (packetReady) { droppedPackets++; return; }
   size_t n = len > ESPNOW_MAX_JSON ? ESPNOW_MAX_JSON : (size_t)len;
   memcpy((void*)packetBuf, data, n);
